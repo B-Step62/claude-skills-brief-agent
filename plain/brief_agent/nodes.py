@@ -129,6 +129,10 @@ def _strip_fence(text: str) -> str:
     return t.strip()
 
 
+def _tidy_links(md: str) -> str:
+    return re.sub(r"\]\(https?://", "](", md)
+
+
 def _ensure_source_link(md: str, results: list) -> str:
     if re.search(r"\]\(https?://[^)]+\)", md):
         return md
@@ -187,7 +191,7 @@ def write_brief(state: dict) -> dict:
     draft = _strip_fence(llm.complete(system, user, max_tokens=12_000))
     if not draft:
         draft = _fallback_brief(date, results)
-    brief = _ensure_source_link(draft, results)
+    brief = _tidy_links(_ensure_source_link(draft, results))
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUTPUT_DIR / f"{date}-{_slug(topic)}.md"

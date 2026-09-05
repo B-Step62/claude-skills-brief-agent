@@ -8,7 +8,7 @@
 # then runs the agent and opens the brief in your browser. The only thing you need
 # beforehand is a Mac (or Linux) with an internet connection.
 #
-# Re-running is safe. It skips steps that are already done.
+# Re-running is safe. It reuses completed setup and refreshes MLflow.
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -87,11 +87,12 @@ fi
 if [ ! -x ".venv/bin/python" ]; then
   say "Creating .venv with uv (Python $PY_VERSION, downloaded by uv if needed)"
   uv venv --python "$PY_VERSION" .venv
-  say "Installing dependencies"
-  uv pip install -r requirements.txt --python .venv/bin/python
 else
-  say ".venv already exists, skipping install"
+  say ".venv already exists, refreshing dependencies"
 fi
+say "Installing dependencies and the latest MLflow"
+uv pip install -r requirements.txt --upgrade-package mlflow --python .venv/bin/python
+say "MLflow: $(.venv/bin/python -c 'import mlflow; print(mlflow.__version__)')"
 
 # --- 5. Dogfood auth ---------------------------------------------------------
 # The agent authenticates via the CLI profile named "$PROFILE". If that profile has

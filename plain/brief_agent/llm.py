@@ -10,7 +10,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 logger = logging.getLogger(__name__)
 
 PROFILE = os.environ.get("BRIEF_AGENT_PROFILE", "dogfood")
-MODEL_ENDPOINT = "databricks-gpt-5-6-terra"
+MODEL_ENDPOINT = "databricks-qwen35-122b-a10b"
 MAX_OUTPUT_TOKENS = 12_000
 MIN_RETRY_OUTPUT_TOKENS = 12_000
 
@@ -59,7 +59,7 @@ def extract_text(content) -> str:
 
 
 def complete(system: str, user: str, max_tokens: int = MAX_OUTPUT_TOKENS,
-             reasoning_effort: str = "low") -> str:
+             temperature: float = 0.3, reasoning_effort: str = "low") -> str:
     messages = []
     if system:
         messages.append(SystemMessage(system))
@@ -69,6 +69,7 @@ def complete(system: str, user: str, max_tokens: int = MAX_OUTPUT_TOKENS,
     response = model.invoke(
         messages,
         max_tokens=max_tokens,
+        temperature=temperature,
         reasoning_effort=reasoning_effort,
     )
     answer = extract_text(response.content)
@@ -80,6 +81,7 @@ def complete(system: str, user: str, max_tokens: int = MAX_OUTPUT_TOKENS,
     response = model.invoke(
         messages,
         max_tokens=retry_tokens,
+        temperature=temperature,
         reasoning_effort=reasoning_effort,
     )
     return extract_text(response.content)
