@@ -91,8 +91,31 @@ else
   say ".venv already exists, refreshing dependencies"
 fi
 say "Installing dependencies and the latest MLflow"
-uv pip install -r requirements.txt --upgrade-package mlflow --python .venv/bin/python
-say "MLflow: $(.venv/bin/python -c 'import mlflow; print(mlflow.__version__)')"
+if [ -n "${BRIEF_AGENT_MLFLOW_VERSION:-}" ]; then
+  MLFLOW_VERSION="$BRIEF_AGENT_MLFLOW_VERSION"
+else
+  PACKAGE_INDEX="${UV_DEFAULT_INDEX:-${UV_INDEX_URL:-https://pypi.org/simple/}}"
+  MLFLOW_VERSION="$(
+    curl -fsSL "${PACKAGE_INDEX%/}/mlflow/" |
+      .venv/bin/python latest_mlflow.py
+  )"
+fi
+case "$MLFLOW_VERSION" in
+  ''|*[!0-9.]*)
+    echo "Could not resolve a valid stable MLflow version: '$MLFLOW_VERSION'" >&2
+    exit 1
+    ;;
+esac
+say "Resolved latest stable MLflow: $MLFLOW_VERSION"
+uv pip install -r requirements.txt "mlflow==$MLFLOW_VERSION" \
+  --upgrade-package mlflow --python .venv/bin/python
+INSTALLED_MLFLOW_VERSION="$(.venv/bin/python -c 'import mlflow; print(mlflow.__version__)')"
+if [ "$INSTALLED_MLFLOW_VERSION" != "$MLFLOW_VERSION" ]; then
+  echo "MLflow version mismatch: resolved $MLFLOW_VERSION but installed $INSTALLED_MLFLOW_VERSION" >&2
+  exit 1
+fi
+printf '%s\n' "$INSTALLED_MLFLOW_VERSION" > .mlflow-version
+say "MLflow: $INSTALLED_MLFLOW_VERSION"
 
 # --- 5. Dogfood auth ---------------------------------------------------------
 # The agent authenticates via the CLI profile named "$PROFILE". If that profile has

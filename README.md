@@ -17,7 +17,10 @@ cd claude-skills-brief-agent
 bash setup.sh
 ```
 
-`setup.sh` installs the required tools, opens a browser for Databricks login, and runs the agent once.
+`setup.sh` installs the required tools, resolves and verifies the newest stable
+MLflow release from the configured package index, opens a browser for Databricks
+login, and runs the agent once. Re-running setup automatically upgrades MLflow
+when a newer stable release is available.
 
 For later runs:
 
