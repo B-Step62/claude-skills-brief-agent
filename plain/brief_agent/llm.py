@@ -10,9 +10,11 @@ from langchain_core.messages import HumanMessage, SystemMessage
 logger = logging.getLogger(__name__)
 
 PROFILE = os.environ.get("BRIEF_AGENT_PROFILE", "dogfood")
-MODEL_ENDPOINT = "databricks-qwen35-122b-a10b"
-MAX_OUTPUT_TOKENS = 12_000
-MIN_RETRY_OUTPUT_TOKENS = 12_000
+MODEL_ENDPOINT = os.environ.get(
+    "BRIEF_AGENT_MODEL_ENDPOINT", "databricks-qwen3-next-80b-a3b-instruct"
+)
+MAX_OUTPUT_TOKENS = 8_000
+MIN_RETRY_OUTPUT_TOKENS = 8_000
 
 _model = None
 
@@ -76,7 +78,7 @@ def complete(system: str, user: str, max_tokens: int = MAX_OUTPUT_TOKENS,
     if answer:
         return answer
 
-    retry_tokens = max(max_tokens * 2, MIN_RETRY_OUTPUT_TOKENS)
+    retry_tokens = min(max(max_tokens * 2, MIN_RETRY_OUTPUT_TOKENS), 10_000)
     logger.warning("Empty model response, retrying once")
     response = model.invoke(
         messages,

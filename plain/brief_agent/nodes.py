@@ -31,7 +31,7 @@ def plan_queries(state: dict) -> dict:
 
     system = prompts.PLAN_SYSTEM
     user = prompts.PLAN_USER_TEMPLATE.format(topic=topic, date=date)
-    raw = llm.complete(system, user, max_tokens=12_000)
+    raw = llm.complete(system, user, max_tokens=8_000)
 
     queries = []
     for line in (raw or "").splitlines():
@@ -188,7 +188,7 @@ def write_brief(state: dict) -> dict:
         topic=topic, date=date, findings=findings, enriched=enriched_block,
     )
     results = state.get("results") or []
-    draft = _strip_fence(llm.complete(system, user, max_tokens=12_000))
+    draft = _strip_fence(llm.complete(system, user, max_tokens=8_000))
     if not draft:
         draft = _fallback_brief(date, results)
     brief = _tidy_links(_ensure_source_link(draft, results))

@@ -29,3 +29,15 @@ For later runs:
 ```
 
 Generated Markdown and HTML briefs are saved in `output/`.
+
+## Model endpoint
+
+The agent uses `databricks-qwen3-next-80b-a3b-instruct` by default. Set
+`BRIEF_AGENT_MODEL_ENDPOINT` to use a different Databricks-hosted model endpoint:
+
+```bash
+BRIEF_AGENT_MODEL_ENDPOINT=your-model-endpoint .venv/bin/python plain/run.py
+```
+
+Generation requests use an 8,000-token output limit; retries are capped at 10,000
+tokens to stay within the default endpoint's limit.
